@@ -1,0 +1,37 @@
+@import "../../variables";
+
+.banner-container {
+  position: absolute;
+  top: 90%;
+  left: 0;
+  width: 100%;
+
+  .banner-hidden {
+    opacity: 0;
+  }
+
+  .banner {
+    padding: 1.2em 2em;
+    margin: 1em;
+
+    border-radius: 0.66em;
+
+    font-size: 0.9em;
+
+    cursor: pointer;
+
+    transition: opacity .2s;
+  }
+
+  .banner-message {
+    background-color: lightgreen;
+  }
+
+  .banner-warn {
+    background-color: #ffa268;
+  }
+
+  .banner-error {
+    background-color: #ff5e5e;
+  }
+}
