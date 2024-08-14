@@ -55,6 +55,16 @@ export default function App() {
 }
 ```
 
+The BannerComponent has a prop parameter to allow customizing the duration
+it will be shown in screen. It can be used this way:
+```
+<BannerComponent logBannerDuration={1000}/>
+```
+The duration is set in ms, being a value of 1000 equivalent to 1 second.
+
+This parameter is optional, if it is not specified, the default
+duration of the banner will be 3000 ms.
+
 This BannerComponent is not mandatory to use. The user of the library
 may want to implement their own component. For that, just bypass the
 use of the <BannerComponent /> tag and, in the custom component, use
