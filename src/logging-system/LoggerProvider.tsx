@@ -3,7 +3,7 @@ import {LoggerContext, LoggerObserverScope, LoggerProducerScope, LogMessage, Log
 import LoggerObserver = LoggerObserverScope.LoggerObserver;
 import LoggerProducer = LoggerProducerScope.LoggerProducer;
 
-export function LoggerProvider({children, printConsole}: { children: ReactNode, printConsole: boolean }) {
+export function LoggerProvider({children, printConsole}: { children: ReactNode, printConsole?: boolean }) {
     const [logState, setLogState] = useState<LogMessage | null>(null)
 
     function printLogToConsole(log: LogMessage, ...objects: any) {
