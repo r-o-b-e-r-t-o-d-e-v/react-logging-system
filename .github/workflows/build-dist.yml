@@ -30,7 +30,7 @@ jobs:
           # Gets the version of the library from package.json
           VERSION=$(node -p "require('./package.json').version")
           
-          # Checks if the tag already exists for that version. If so, its cancels the deployment of the distribution.
+          # Checks if the tag already exists for that version. If so, it cancels the deployment of the distribution.
           if git rev-parse -q --verify "refs/tags/v${VERSION}"; then
             echo "Tag v${VERSION} already exists."
             echo "TAG_EXISTS=true" >> $GITHUB_ENV
