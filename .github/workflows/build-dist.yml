@@ -1,0 +1,51 @@
+name: Build and Deploy dist
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the project
+        run: npm run build
+
+      - name: Configure Git
+        run: |
+          git config --global user.name ${{ secrets.GIT_USER_NAME }}
+          git config --global user.email ${{ secrets.GIT_USER_EMAIL }}
+
+      - name: Create dist branch
+        run: |
+          git checkout --orphan dist
+
+          # Removes everything but 'dist', 'package.json' and '.git'
+          # -mindepth 1 -maxdepth 1 is used to just pick the top level files and folders. this means
+          # that, for example, 'node_modules' will be found but no folders or files contained in it.
+          # That's enough since later the rm command will be thrown in recursive manner
+          find . -mindepth 1 -maxdepth 1 \
+            ! -name 'dist' \
+            ! -name 'package.json' \
+            ! -name '.git' \
+            -exec rm -rf {} +
+
+          git add .
+          git commit -m 'Deploy dist'
+          git branch -M dist
+          git push -f origin dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
