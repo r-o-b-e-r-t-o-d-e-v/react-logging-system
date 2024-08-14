@@ -77,9 +77,17 @@ branch labeled as 'dist'. At the end, there will be a 'main' branch with
 the library development project and a 'dist' branch with the minimum
 necessary files for the distribution of the library.
 
+Every commit into this 'dist' branch will be accompanied by a tag, that will
+help to maintain a version control for every modification on the library.
+
 ## Installing the library
 
 For a project to install the library simply run:
 ```
-npm i github:r-o-b-e-r-t-o-d-e-v/react-logging-system#dist
+npm i github:r-o-b-e-r-t-o-d-e-v/react-logging-system#<tag_version>
+```
+
+Example:
+```
+npm i github:r-o-b-e-r-t-o-d-e-v/react-logging-system#v1.0.0
 ```
