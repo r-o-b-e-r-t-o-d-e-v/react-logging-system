@@ -3,11 +3,11 @@ import {useEffect, useRef, useState} from "react";
 import {LoggerObserverScope, LogType} from "../../logging-system/LoggerContext";
 import useLogger = LoggerObserverScope.useLogger;
 
-const LOG_BANNER_DURATION = 3000;
-const LOG_REMOVING_OFFSET = 1500;   // This is the offset time that will take since the banner disappears until the log is completely removed
-const SPACE = ' ';
+export function BannerComponent({logBannerDuration}: {logBannerDuration?: number}) {
+    const LOG_BANNER_DURATION_DEFAULT: number = 3000;
+    const LOG_REMOVING_OFFSET: number = 1500;   // This is the offset time that will take since the banner disappears until the log is completely removed
+    const SPACE: string = ' ';
 
-export function BannerComponent() {
     const [showBanner, setShowBanner] = useState<boolean>(false);
     const timerBannerRef = useRef<NodeJS.Timeout | null>(null);
     const timerLogRef = useRef<NodeJS.Timeout | null>(null);
@@ -30,7 +30,7 @@ export function BannerComponent() {
             }
 
             setShowBanner(true);
-            timerBannerRef.current = setTimeout(() => _clearLog(), LOG_BANNER_DURATION)
+            timerBannerRef.current = setTimeout(() => _clearLog(), logBannerDuration ?? LOG_BANNER_DURATION_DEFAULT)
 
             return () => _clearBannerTimeout();
         }
