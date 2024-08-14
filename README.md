@@ -7,27 +7,39 @@ It consists in two parts:
 - banner-component: Will handle the UI.
 
 ## logging-system
-- __LoggerContext__ will manage the creation of a React context and the
-  definition of interfaces for the both log observer and log producer.
-  - __Log Observer__: This part of the LoggerContext allow other pieces
-    of code retrieve the current log and, in the case of a React
-    component, react when a new log comes in. For a quick overview on
-    how to make use of this, check the [banner-component](#banner-component)
-    section below.
-  - __Log Producer__: This is the other part of the LoggerContext, it
-    allows to produce new log messages that will be processed by the
-    LoggerProvider. To produce new logs you should use 'useLogger' from
-    'LoggerProducerScope':
-    ```
-    import {LoggerProducerScope} from "react-logging-system";
-    import useLogger = LoggerProducerScope.useLogger;
-    ```
-- __LoggerProvider__: This piece of code will implement the interfaces
-  mentioned above and will do the setup of the LoggerContext.Provider,
-  hence the user only needs to wrap the tsx code with the tag 'LoggerProvider'
+__LoggerContext__
 
-  It also requires the user to specify if the logs should also be printed
-  in the JS console by the prop parameter 'printConsole'.
+The LoggerContext will manage the creation of a React context and the
+  definition of interfaces for the both log observer and log producer.
+- __Log Observer__: This part of the LoggerContext allow other pieces
+  of code retrieve the current log and, in the case of a React
+  component, react when a new log comes in. For a quick overview on
+  how to make use of this, check the [banner-component](#banner-component)
+  section below.
+- __Log Producer__: This is the other part of the LoggerContext, it
+  allows to produce new log messages that will be processed by the
+  LoggerProvider. To produce new logs you should use 'useLogger' from
+  'LoggerProducerScope':
+  ```
+  import {LoggerProducerScope} from "react-logging-system";
+  import useLogger = LoggerProducerScope.useLogger;
+  ```
+
+__LoggerProvider__
+
+This piece of code will implement the interfaces
+mentioned above and will do the setup of the LoggerContext.Provider,
+hence the user only needs to wrap the tsx code with the tag 'LoggerProvider'.
+
+It also accepts the user to specify if the logs should also be printed
+in the JS console by the prop parameter 'printConsole'.
+This is an optional parameter. If omitted, the log will not be printed
+in the JS console.
+```
+<LoggerProvider printConsole={true}>
+...
+</LoggerProvider>
+```
 
 ## banner-component
 __BannerComponent__ is a React component that implement the previous
