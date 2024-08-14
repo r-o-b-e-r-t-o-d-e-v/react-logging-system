@@ -18,34 +18,118 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Configure Git
+        run: |
+          git config --global user.name ${{ secrets.GIT_USER_NAME }}
+          git config --global user.email ${{ secrets.GIT_USER_EMAIL }}
+
+      - name: Check code version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Gets the version of the library from package.json
+          VERSION=$(node -p "require('./package.json').version")
+          
+          # Checks if the tag already exists for that version. If so, its cancels the deployment of the distribution.
+          if git rev-parse -q --verify "refs/tags/v${VERSION}"; then
+            echo "Tag v${VERSION} already exists."
+            echo "TAG_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "TAG_VERSION=v${VERSION}" >> $GITHUB_ENV
+          fi
+
+      - name: Canceling deployment
+        if: env.TAG_EXISTS == 'true'
+        run: |
+          echo "Canceling the deployment..."
+          echo "Reason: The version of the code matches with an existing distribution."
+          echo "Suggestion: Please, check the version of the code. Maybe forgot to upgrade it in package.json?"
+          exit 1
+
       - name: Install dependencies
         run: npm install
 
       - name: Build the project
         run: npm run build
 
-      - name: Configure Git
+      - name: Temporal moving out the generated dist folder
         run: |
-          git config --global user.name ${{ secrets.GIT_USER_NAME }}
-          git config --global user.email ${{ secrets.GIT_USER_EMAIL }}
+          mv dist /tmp/dist
+          mv package.json /tmp/package.json
 
-      - name: Create dist branch
+      - name: Prepare dist branch
         run: |
-          git checkout --orphan dist
+          git fetch --prune
+          git fetch --all
+          
+          # If there is a remote 'dist' branch, then we switch to it, otherwise we create one with orphan mode to have a clean environment without history related to the library code.
+          # We previously moved out the 'dist' folder because it's necessary for committing but building the 'dist' may provoke other files like package-lock.json to have some changes. This changes may forbid us to checkout to dist, so we move out the 'dist' folder in order to do a hard reset before switching to the existing 'dist' branch.
+          if git branch -r | grep -q "origin/dist"; then
+            echo "The branch dist already exists."
+            git reset --hard HEAD
+            git switch dist
+            git reset --hard origin/dist
+          else
+            echo "Creating dist branch."
+            git checkout --orphan dist
+          fi
 
+      - name: Moving back the generated dist
+        run: |
+          # Removing the current 'dist' folder if any
+          if [ -d "dist" ]; then
+            rm -rf dist
+          fi
+          mv /tmp/dist .
+          mv /tmp/package.json package.json
+
+      - name: Cleaning up distribution
+        run: |
+          echo "Cleaning up"
           # Removes everything but 'dist', 'package.json' and '.git'
           # -mindepth 1 -maxdepth 1 is used to just pick the top level files and folders. this means
           # that, for example, 'node_modules' will be found but no folders or files contained in it.
-          # That's enough since later the rm command will be thrown in recursive manner
+          # That's enough since later the rm command will be thrown in recursive manner.
           find . -mindepth 1 -maxdepth 1 \
             ! -name 'dist' \
             ! -name 'package.json' \
             ! -name '.git' \
             -exec rm -rf {} +
 
+      - name: Checking changes on distribution
+        run: |
+          # Checking if any change has been produced in the distribution files. If the pushed commit didn't affect the distribution (for example a change in the README.md), no new deployment will be done.
+          echo "Checking changes on distribution..."
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No changes affecting the distribution."
+            echo "No new tag and deploy will be generated."
+            echo "Finishing action without deployment."
+            echo "ACTION_STATUS_ONGOING=false" >> $GITHUB_ENV
+          else
+            echo "There are new changes to commit."
+          fi
+
+      - name: Commit distribution
+        if: env.ACTION_STATUS_ONGOING!='false'
+        run: |
+          echo "Commiting..."
           git add .
           git commit -m 'Deploy dist'
-          git branch -M dist
-          git push -f origin dist
+
+      - name: Setup tag version
+        if: env.ACTION_STATUS_ONGOING!='false'
+        env:
+          TAG_VERSION: ${{ env.TAG_VERSION }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Creating tag ${TAG_VERSION}."
+          git tag -a ${TAG_VERSION} -m "Release dist version ${TAG_VERSION}"
+          git push origin ${TAG_VERSION}
+
+      - name: Deploy distribution
+        if: env.ACTION_STATUS_ONGOING!='false'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Deploying distribution."
+          git push origin dist
