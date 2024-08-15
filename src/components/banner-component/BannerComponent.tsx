@@ -48,6 +48,12 @@ export function BannerComponent({logBannerDuration}: {logBannerDuration?: number
         }
     }
 
+    function onClickBanner() {
+        if(showBanner) {
+            _clearBannerTimeoutAndLog()
+        }
+    }
+
     function _clearBannerTimeoutAndLog() {
         if (timerBannerRef.current) {
             _clearLog();
@@ -68,7 +74,7 @@ export function BannerComponent({logBannerDuration}: {logBannerDuration?: number
     }
 
     return <div className={"banner-container "}>
-        <div className={resolveBannerClasses()} onClick={_clearBannerTimeoutAndLog}>
+        <div className={resolveBannerClasses()} onClick={onClickBanner}>
             <span>{logMessage?.message}</span>
         </div>
     </div>
